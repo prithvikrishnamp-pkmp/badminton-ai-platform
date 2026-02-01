@@ -68,12 +68,10 @@ def analyze_video(video_path):
             prev_right_ankle = (rx, ry)
 
 
-        cv2.imshow("Badminton Pose AI", frame)
-        if cv2.waitKey(10) & 0xFF == ord('q'):
-            break
+        
 
     cap.release()
-    cv2.destroyAllWindows()
+    
 
 if __name__ == "__main__":
     analyze_video("sample_badminton.mp4")
