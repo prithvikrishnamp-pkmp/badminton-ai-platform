@@ -321,11 +321,11 @@ else:
 
 
 # -----------------------------
-# 🎥 VIDEO POSE ANALYSIS
+# 🎥 AI VIDEO POSE + MOVEMENT ANALYSIS
 # -----------------------------
-st.header("🎥 Upload Badminton Video for Pose Analysis")
+st.header("🎥 Upload Badminton Video for AI Analysis")
 
-uploaded_video = st.file_uploader("Upload video", type=["mp4", "mov"])
+uploaded_video = st.file_uploader("Upload badminton practice video", type=["mp4", "mov"])
 
 if uploaded_video is not None:
     st.video(uploaded_video)
@@ -336,46 +336,8 @@ if uploaded_video is not None:
     tfile = tempfile.NamedTemporaryFile(delete=False)
     tfile.write(uploaded_video.read())
 
-    st.write("Processing video... Please wait ⏳")
+    st.write("Processing video with AI... ⏳")
+
     pose_analysis.analyze_video(tfile.name)
-import cv2
-import mediapipe as mp
-import tempfile
 
-st.header("🎥 Movement Analysis (Upload Video)")
-
-uploaded_video = st.file_uploader("Upload badminton practice video", type=["mp4"])
-
-if uploaded_video is not None:
-    tfile = tempfile.NamedTemporaryFile(delete=False)
-    tfile.write(uploaded_video.read())
-
-    mp_pose = mp.solutions.pose
-    mp_drawing = mp.solutions.drawing_utils
-
-    cap = cv2.VideoCapture(tfile.name)
-
-    stframe = st.empty()
-
-    with mp_pose.Pose(min_detection_confidence=0.5,
-                      min_tracking_confidence=0.5) as pose:
-
-        while cap.isOpened():
-            ret, frame = cap.read()
-            if not ret:
-                break
-
-            image = cv2.cvtColor(frame, cv2.COLOR_BGR2RGB)
-            results = pose.process(image)
-
-            if results.pose_landmarks:
-                mp_drawing.draw_landmarks(
-                    frame,
-                    results.pose_landmarks,
-                    mp_pose.POSE_CONNECTIONS)
-
-            stframe.image(frame, channels="BGR")
-
-    cap.release()
-
-
+    st.success("Analysis Complete ✅")
