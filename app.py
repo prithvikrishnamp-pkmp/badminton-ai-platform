@@ -321,25 +321,12 @@ else:
 
 
 # -----------------------------
-# 🎥 AI VIDEO POSE + MOVEMENT ANALYSIS
+# 🎥 VIDEO AI MODULE
 # -----------------------------
-import tempfile
-import streamlit as st
-import pose_analysis
+st.header("🎥 Badminton Pose Analysis")
 
-st.header("🎥 Movement Analysis (Upload Video)")
-
-uploaded_video = st.file_uploader("Upload badminton practice video", type=["mp4"])
-
-if uploaded_video is not None:
-    tfile = tempfile.NamedTemporaryFile(delete=False)
-    tfile.write(uploaded_video.read())
-
-    stframe = st.empty()
-    st.write("Analyzing movement...")
-
-    balance, speed = pose_analysis.analyze_video(tfile.name, stframe)
-
-    st.success("Analysis Complete")
-    st.metric("🧍 Balance Angle", balance)
-    st.metric("🏃 Footwork Speed", speed)
+st.info(
+    "⚠ Video AI analysis runs locally due to heavy computer vision processing.\n\n"
+    "Run pose_analysis.py on your PC to analyze badminton videos.\n"
+    "The system calculates balance angle and footwork speed."
+)
