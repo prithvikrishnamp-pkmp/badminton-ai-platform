@@ -3,10 +3,6 @@ import numpy as np
 import streamlit as st
 import pandas as pd
 import os
-import sys
-import os
-sys.path.append(os.path.dirname(__file__))
-import pose_analysis
 
 from sklearn.ensemble import RandomForestClassifier
 from sklearn.linear_model import LinearRegression
@@ -335,7 +331,11 @@ if uploaded_video is not None:
     st.video(uploaded_video)
 
     import tempfile
-    
+    import sys
+    import os
+    sys.path.append(os.path.dirname(__file__))
+
+    import pose_analysis
 
 
     tfile = tempfile.NamedTemporaryFile(delete=False)
