@@ -55,7 +55,30 @@ X = df[["Fitness","Footwork","Smash","Reaction"]]
 y = df["Skill"]
 
 model = RandomForestClassifier()
-model.fit(X,y)
+from sklearn.model_selection import train_test_split
+from sklearn.metrics import accuracy_score, confusion_matrix
+
+# Split data
+X_train, X_test, y_train, y_test = train_test_split(
+    X, y, test_size=0.3, random_state=42
+)
+
+# Train
+model = RandomForestClassifier()
+model.fit(X_train, y_train)
+
+# Predict on unseen data
+y_pred = model.predict(X_test)
+
+# Evaluation
+acc = accuracy_score(y_test, y_pred)
+cm = confusion_matrix(y_test, y_pred)
+
+st.subheader("📊 Model Evaluation")
+st.write(f"Test Accuracy: {acc*100:.2f}%")
+st.write("Confusion Matrix:")
+st.write(cm)
+
 # ==============================
 # INJURY RISK TRAINING DATA
 # ==============================
@@ -134,6 +157,17 @@ if st.button("Analyze Player"):
 
     levels = {0:"Beginner",1:"Intermediate",2:"Advanced"}
     st.success(f"Predicted Skill Level: {levels[pred]}")
+    st.subheader("🏋️ Training Recommendations")
+
+    if footwork < 5:
+        st.write("• Improve lateral movement drills and shadow practice")
+    if smash < 5:
+        st.write("• Focus on smash power and wrist strengthening")
+    if reaction < 5:
+        st.write("• Add reflex training and multi-shuttle drills")
+    if fitness < 5:
+        st.write("• Improve endurance and on-court stamina training")
+
 
     skill_name = levels[pred]
 
@@ -182,6 +216,15 @@ if st.button("Analyze Player"):
     })
 
     risk_pred = injury_model.predict(injury_input)[0]
+    st.subheader("⚠️ Fatigue Analysis")
+
+    if fitness < 4 and smash > 7:
+        st.warning("High workload with low fitness — Risk of overtraining")
+    elif fitness > 7 and reaction > 7:
+        st.success("Good recovery and conditioning level")
+    else:
+        st.info("Balanced training load")
+
 
 
 
@@ -276,5 +319,63 @@ if os.path.exists(db_file):
 else:
     st.write("No player data available yet.")
 
+
+# -----------------------------
+# 🎥 VIDEO POSE ANALYSIS
+# -----------------------------
+st.header("🎥 Upload Badminton Video for Pose Analysis")
+
+uploaded_video = st.file_uploader("Upload video", type=["mp4", "mov"])
+
+if uploaded_video is not None:
+    st.video(uploaded_video)
+
+    import tempfile
+    import pose_analysis
+
+    tfile = tempfile.NamedTemporaryFile(delete=False)
+    tfile.write(uploaded_video.read())
+
+    st.write("Processing video... Please wait ⏳")
+    pose_analysis.analyze_video(tfile.name)
+import cv2
+import mediapipe as mp
+import tempfile
+
+st.header("🎥 Movement Analysis (Upload Video)")
+
+uploaded_video = st.file_uploader("Upload badminton practice video", type=["mp4"])
+
+if uploaded_video is not None:
+    tfile = tempfile.NamedTemporaryFile(delete=False)
+    tfile.write(uploaded_video.read())
+
+    mp_pose = mp.solutions.pose
+    mp_drawing = mp.solutions.drawing_utils
+
+    cap = cv2.VideoCapture(tfile.name)
+
+    stframe = st.empty()
+
+    with mp_pose.Pose(min_detection_confidence=0.5,
+                      min_tracking_confidence=0.5) as pose:
+
+        while cap.isOpened():
+            ret, frame = cap.read()
+            if not ret:
+                break
+
+            image = cv2.cvtColor(frame, cv2.COLOR_BGR2RGB)
+            results = pose.process(image)
+
+            if results.pose_landmarks:
+                mp_drawing.draw_landmarks(
+                    frame,
+                    results.pose_landmarks,
+                    mp_pose.POSE_CONNECTIONS)
+
+            stframe.image(frame, channels="BGR")
+
+    cap.release()
 
 
