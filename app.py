@@ -331,7 +331,12 @@ if uploaded_video is not None:
     st.video(uploaded_video)
 
     import tempfile
+    import sys
+    import os
+    sys.path.append(os.path.dirname(__file__))
+
     import pose_analysis
+
 
     tfile = tempfile.NamedTemporaryFile(delete=False)
     tfile.write(uploaded_video.read())
