@@ -3,4 +3,8 @@ pandas
 scikit-learn
 matplotlib
 numpy
+mediapipe
+opencv-python
+numpy
+
 
