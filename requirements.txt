@@ -6,5 +6,8 @@ numpy
 mediapipe
 opencv-python
 numpy
+opencv-python-headless
+mediapipe
+
 
 
