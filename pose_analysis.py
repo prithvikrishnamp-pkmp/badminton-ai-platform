@@ -1,5 +1,6 @@
 import cv2
 import mediapipe as mp
+import math
 from mediapipe.tasks import python
 from mediapipe.tasks.python import vision
 
@@ -11,12 +12,15 @@ options = vision.PoseLandmarkerOptions(
 )
 detector = vision.PoseLandmarker.create_from_options(options)
 
-def analyze_video(video_path):
+
+def analyze_video(video_path, stframe=None):
     cap = cv2.VideoCapture(video_path)
     frame_id = 0
     prev_left_ankle = None
     prev_right_ankle = None
 
+    balance_values = []
+    speed_values = []
 
     while cap.isOpened():
         ret, frame = cap.read()
@@ -27,30 +31,26 @@ def analyze_video(video_path):
         results = detector.detect_for_video(mp_image, frame_id)
         frame_id += 1
 
-        # Draw landmarks
         if results.pose_landmarks:
             landmarks = results.pose_landmarks[0]
-
             h, w, _ = frame.shape
 
-    # Draw points
+            # Draw landmarks
             for lm in landmarks:
                 cx, cy = int(lm.x * w), int(lm.y * h)
                 cv2.circle(frame, (cx, cy), 4, (0,255,0), -1)
 
-    # 🎯 LEFT & RIGHT SHOULDER (index numbers from MediaPipe Pose)
+            # 🎯 BALANCE (SHOULDER ANGLE)
             left_shoulder = landmarks[11]
             right_shoulder = landmarks[12]
 
-            import math
             balance_angle = math.atan2(
                 right_shoulder.y - left_shoulder.y,
                 right_shoulder.x - left_shoulder.x
             )
+            balance_values.append(balance_angle)
 
-            print("Balance Angle:", round(balance_angle, 3))
-
-            # 🏃 FOOTWORK SPEED (ANKLES)
+            # 🏃 FOOTWORK SPEED
             left_ankle = landmarks[27]
             right_ankle = landmarks[28]
 
@@ -60,18 +60,19 @@ def analyze_video(video_path):
             if prev_left_ankle is not None:
                 speed_left = math.sqrt((lx - prev_left_ankle[0])**2 + (ly - prev_left_ankle[1])**2)
                 speed_right = math.sqrt((rx - prev_right_ankle[0])**2 + (ry - prev_right_ankle[1])**2)
-
-                footwork_speed = (speed_left + speed_right) / 2
-                print("Footwork Speed:", round(footwork_speed, 2))
+                speed_values.append((speed_left + speed_right) / 2)
 
             prev_left_ankle = (lx, ly)
             prev_right_ankle = (rx, ry)
 
-
-        
+        # Show frame in Streamlit if provided
+        if stframe:
+            stframe.image(frame, channels="BGR")
 
     cap.release()
-    
 
-if __name__ == "__main__":
-    analyze_video("sample_badminton.mp4")
+    # Return average metrics
+    avg_balance = round(sum(balance_values)/len(balance_values), 3) if balance_values else 0
+    avg_speed = round(sum(speed_values)/len(speed_values), 2) if speed_values else 0
+
+    return avg_balance, avg_speed
