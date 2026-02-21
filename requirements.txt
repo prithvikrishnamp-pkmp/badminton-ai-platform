@@ -1,5 +1,8 @@
-streamlit
-scikit-learn
-pandas
+opencv-python
+mediapipe
 numpy
+pandas
 matplotlib
+scikit-learn
+streamlit
+jupyter
